@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание обращения КЦ</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: #0f172a;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .contract-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #475569;
+            padding: 8px 12px;
+            font-size: 14px;
+            width: auto;
+            margin-top: 4px;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        .btn-danger {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 0 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-danger:hover {
+            background-color: #fecaca;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #64748b;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Новое обращение КЦ</h2>
+        <form id="supportForm" onsubmit="handleSubmit(event)">
+            
+            <div class="form-group">
+                <label for="applicant">Заявитель *</label>
+                <input type="text" id="applicant" required placeholder="ФИО заявителя">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Номер *</label>
+                <input type="text" id="phone" required placeholder="+998 90 123 45 67">
+            </div>
+
+            <div class="form-group">
+                <label>Номер договора (можно добавить несколько) *</label>
+                <div id="contractsContainer">
+                    <div class="contract-row">
+                        <input type="text" class="contract-input" required placeholder="Введите номер договора">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addContractField()">+ Добавить договор</button>
+            </div>
+
+            <div class="form-group">
+                <label for="legalName">Юр. название *</label>
+                <input type="text" id="legalName" required placeholder="На чье имя поступило обращение">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Описание *</label>
+                <textarea id="description" required placeholder="Суть обращения..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="creator">Создатель (ФИО / Юзер ТГ) *</label>
+                <input type="text" id="creator" required placeholder="@username или ФИО оператора">
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">Отправить обращение</button>
+            <div id="loading">Отправка данных и создание карточки...</div>
+        </form>
+    </div>
+
+    <script>
+        // ЗАМЕНИТЕ ЭТУ СТРОКУ НА ВАШ URL ВЕБ-ПРИЛОЖЕНИЯ GOOGLE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwmS741ezIGwNN4UzW2HFJflmZ5pjlGzDRWYCjrlP3U_Yiz2_eh5ov_jCsCi89-aLDD/exec';
+
+        function addContractField() {
+            const container = document.getElementById('contractsContainer');
+            const row = document.createElement('div');
+            row.className = 'contract-row';
+            row.innerHTML = `
+                <input type="text" class="contract-input" required placeholder="Введите номер договора">
+                <button type="button" class="btn-danger" onclick="removeContractField(this)">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeContractField(btn) {
+            const container = document.getElementById('contractsContainer');
+            if (container.children.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            
+            submitBtn.style.display = 'none';
+            loading.style.display = 'block';
+
+            const contractInputs = document.querySelectorAll('.contract-input');
+            const contracts = Array.from(contractInputs).map(input => input.value.trim()).filter(v => v !== '');
+
+            const formData = {
+                applicant: document.getElementById('applicant').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                contracts: contracts,
+                legalName: document.getElementById('legalName').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                creator: document.getElementById('creator'].value.trim()
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Важно для кросс-доменных запросов к GAS
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // При mode: 'no-cors' ответ прочитать нельзя напрямую, но если дошли сюда без исключений — данные улетели
+                alert('Обращение успешно создано и отправлено в Telegram!');
+                document.getElementById('supportForm').reset();
+                
+                // Сбрасываем динамические поля договоров до одного
+                const container = document.getElementById('contractsContainer');
+                container.innerHTML = `
+                    <div class="contract-row">
+                        <input type="text" class="contract-input" required placeholder="Введите номер договора">
+                    </div>
+                `;
+            } catch (err) {
+                alert('Ошибка соединения: ' + err.message);
+            } finally {
+                submitBtn.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
